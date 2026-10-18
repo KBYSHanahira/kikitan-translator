@@ -286,6 +286,16 @@ export const langSource = [
     },
     {
         name: {
+            en: "Thai",
+            jp: "タイ語",
+            cn: "泰语",
+            kr: "태국어",
+            tr: "Tayca",
+        },
+        code: "th",
+    },
+    {
+        name: {
             en: "Turkish",
             jp: "トルコ語",
             cn: "土耳其语",

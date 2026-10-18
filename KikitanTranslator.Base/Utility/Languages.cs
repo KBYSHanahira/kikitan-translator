@@ -23,6 +23,7 @@
             { "ro", Resources.LanguageResources.languages.lang_ro },
             { "ru", Resources.LanguageResources.languages.lang_ru },
             { "sv", Resources.LanguageResources.languages.lang_sv },
+            { "th", Resources.LanguageResources.languages.lang_th },
             { "tr", Resources.LanguageResources.languages.lang_tr }
         };
         
