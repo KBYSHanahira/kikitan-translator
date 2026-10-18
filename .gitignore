@@ -3,3 +3,4 @@ obj
 Releases
 build-dir
 .tools
+.claude/
