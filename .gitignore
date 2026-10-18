@@ -6,3 +6,4 @@ build-dir
 .claude/
 .idea/
 *.DotSettings.user
+.vscode/
