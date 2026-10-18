@@ -4,12 +4,12 @@ namespace KikitanTranslator.Types.Bing
 {
     public class ContextServiceTag
     {
-        [JsonProperty("serviceTag")] public String ServiceTag;
+        [JsonProperty("serviceTag")] public String ServiceTag = null!;
     } 
 
     public class TurnStart
     {
-        [JsonProperty("context")] public ContextServiceTag Context;
+        [JsonProperty("context")] public ContextServiceTag Context = null!;
     }
 
     public class SpeechData : IDisposable

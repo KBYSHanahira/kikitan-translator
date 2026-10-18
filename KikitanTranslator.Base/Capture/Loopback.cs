@@ -315,7 +315,7 @@ public class Loopback : ICapture
             {
                 _ = completion.Result.Task.ContinueWith(task =>
                 {
-                    if (task.IsCompletedSuccessfully) Marshal.ReleaseComObject(task.Result);
+                    if (task.IsCompletedSuccessfully) ReleaseCom(task.Result);
                     else _ = task.Exception;
                 }, CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default);
                 throw;
@@ -328,15 +328,21 @@ public class Loopback : ICapture
             }
             catch
             {
-                Marshal.ReleaseComObject(activated);
+                ReleaseCom(activated);
                 throw;
             }
         }
         finally
         {
-            if (operation != null) Marshal.ReleaseComObject(operation);
+            if (operation != null) ReleaseCom(operation);
             GC.KeepAlive(completion);
         }
+    }
+
+    // Loopback capture only runs on Windows (WASAPI); the guard keeps the platform analyzer satisfied.
+    private static void ReleaseCom(object o)
+    {
+        if (OperatingSystem.IsWindows()) Marshal.ReleaseComObject(o);
     }
 
     private sealed class CaptureSession(Process process)
@@ -442,7 +448,7 @@ public class Loopback : ICapture
             }
             finally
             {
-                if (activated != null) Marshal.ReleaseComObject(activated);
+                if (activated != null) ReleaseCom(activated);
                 FreeParameters();
             }
         }

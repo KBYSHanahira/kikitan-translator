@@ -4,6 +4,8 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <!-- CS8981: the generated resx classes (languages, messages) are lowercase by design. -->
+        <NoWarn>$(NoWarn);CS8981</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

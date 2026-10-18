@@ -6,18 +6,18 @@ namespace KikitanTranslator.Photino.Handlers;
 
 public class ConfigUpdate
 {
-    [JsonProperty("field")] public string Field;
-    [JsonProperty("value")] public object Value;
+    [JsonProperty("field")] public string Field = null!;
+    [JsonProperty("value")] public object Value = null!;
 }
 
 public class UpdateConfig(Manager manager) : IHandler
 {
-    public async Task<string?> OnDataReceived(string data)
+    public Task<string?> OnDataReceived(string data)
     {
         bool doNotRestart = false;
         
         var d = JsonConvert.DeserializeObject<ConfigUpdate>(data);
-        if (d == null) return "";
+        if (d == null) return Task.FromResult<string?>("");
         Log.Information($"[CFG]  Configuration update requested: field={d.Field}");
 
         switch (d.Field)
@@ -120,6 +120,6 @@ public class UpdateConfig(Manager manager) : IHandler
         
         if (!doNotRestart) manager.RestartIfRunning();
 
-        return "";
+        return Task.FromResult<string?>("");
     }
 }

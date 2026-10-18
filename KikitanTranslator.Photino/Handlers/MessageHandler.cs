@@ -6,8 +6,8 @@ namespace KikitanTranslator.Photino.Handlers;
 
 public class Message
 {
-    [JsonProperty("method")] public string Method;
-    [JsonProperty("data")] public string Data;
+    [JsonProperty("method")] public string Method = null!;
+    [JsonProperty("data")] public string Data = null!;
 }
 
 public class MessageHandler

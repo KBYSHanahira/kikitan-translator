@@ -25,17 +25,17 @@ namespace KikitanTranslator.Photino;
 
 public class Mic
 {
-    [JsonProperty("name")] public string Name;
+    [JsonProperty("name")] public string Name = null!;
     [JsonProperty("default")] public bool Default;
 }
 
 public class AppState
 {
-    [JsonProperty("microphones")] public Mic[] Microphones;
-    [JsonProperty("config")] public ConfigObject Config;
+    [JsonProperty("microphones")] public Mic[] Microphones = null!;
+    [JsonProperty("config")] public ConfigObject Config = null!;
     [JsonProperty("status")] public int Status;
     [JsonProperty("app_version")] public string AppVersion = "Developer Build";
-    [JsonProperty("server_version")] public string ServerVersion;
+    [JsonProperty("server_version")] public string? ServerVersion;
     [JsonProperty("is_linux")] public bool IsLinux;
     [JsonProperty("is_appimage")] public bool IsAppimage;
     [JsonProperty("is_muted")] public bool IsMuted;
@@ -43,8 +43,8 @@ public class AppState
 
 public class RecognitionData
 {
-    [JsonProperty("transcription")] public string Transcription;
-    [JsonProperty("translation")] public string Translation;
+    [JsonProperty("transcription")] public string Transcription = null!;
+    [JsonProperty("translation")] public string Translation = null!;
     [JsonProperty("final")] public bool Final;
 }
 
@@ -53,7 +53,7 @@ public class Manager
     private Kikitan? _microphoneKikitan;
     private Kikitan? _desktopKikitan;
 
-    private ITranslator _translator;
+    private ITranslator? _translator;
     private Loopback _loopback;
     private Microphone _mic;
     private AppState _appState = new () { Microphones = [] };
@@ -150,10 +150,13 @@ public class Manager
                     SendUpdateToUI();
                 }
 
-                if (_appState.Config.Microphone.Length != 0 && !mics.Exists(m => m.Name == _appState.Config.Microphone))
+                if (_appState.Config.Microphone.Length != 0 && engine.CaptureDevices.Length != 0 &&
+                    !mics.Exists(m => m.Name == _appState.Config.Microphone))
                 {
-                    var device = engine.CaptureDevices.FirstOrDefault(d => d.IsDefault);
-                    if (device == null) device = engine.CaptureDevices[0];
+                    // DeviceInfo is a struct, so FirstOrDefault returns an empty value (never null) when there is no default.
+                    var device = engine.CaptureDevices.Any(d => d.IsDefault)
+                        ? engine.CaptureDevices.First(d => d.IsDefault)
+                        : engine.CaptureDevices[0];
                     
                     Log.Warning($"[MIC]  The selected mic ({AppConfig.ConfigObject.Microphone}) is not available. Switching to the system default ({device.Name})");
                     

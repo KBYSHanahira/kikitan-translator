@@ -7,12 +7,12 @@ namespace KikitanTranslator.Base.Translators;
 
 internal class Sentence
 {
-    [JsonProperty("trans")] public string Translation;
+    [JsonProperty("trans")] public string Translation = null!;
 }
 
 internal class Response : IDisposable
 {
-    [JsonProperty("sentences")] public Sentence[] Sentences;
+    [JsonProperty("sentences")] public Sentence[] Sentences = null!;
 
 
     public void Dispose()
@@ -23,21 +23,25 @@ internal class Response : IDisposable
 
 public class GoogleTranslate : ITranslator
 {
+    private static readonly HttpClient _httpClient = new(new HttpClientHandler
+    {
+        AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+    });
+
     private CurlImpersonate _curlImpersonate = new();
 
     public string? Translate(string text, string source, string target)
     {
         Log.Debug($"[GT]   Translation requested: chars={text.Length}, source={source}, target={target}");
-        HttpWebRequest request = (HttpWebRequest)WebRequest.Create($"https://translate.googleapis.com/translate_a/single?client=gtx&sl={source}&tl={target}&dt=t&dt=bd&dj=1&q={Uri.EscapeDataString(text)}");
-        request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"https://translate.googleapis.com/translate_a/single?client=gtx&sl={source}&tl={target}&dt=t&dt=bd&dj=1&q={Uri.EscapeDataString(text)}");
 
         try
         {
-            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+            using (HttpResponseMessage response = _httpClient.Send(request))
             {
                 if (response.StatusCode != HttpStatusCode.OK) return TranslateWithCurlImpersonate(text, source, target);
 
-                using (Stream stream = response.GetResponseStream())
+                using (Stream stream = response.Content.ReadAsStream())
                 using (StreamReader reader = new StreamReader(stream))
                 using (Response? resp = JsonConvert.DeserializeObject<Response>(reader.ReadToEnd()))
                 {

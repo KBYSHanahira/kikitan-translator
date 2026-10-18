@@ -86,7 +86,7 @@ public class Gemini(ICapture capture) : IRecognizer
         
         _client.MessageReceived.Subscribe(message =>
         {
-            var msg = Encoding.UTF8.GetString(message.Binary).Trim();
+            var msg = (message.Text ?? Encoding.UTF8.GetString(message.Binary ?? [])).Trim();
             dynamic data = JObject.Parse(msg);
 
             if (_status != RecognizerStatus.Running)
@@ -145,7 +145,7 @@ public class Gemini(ICapture capture) : IRecognizer
             }
         });
         
-        _client.DisconnectionHappened.Subscribe(async info =>
+        _client.DisconnectionHappened.Subscribe(info =>
         {
             Log.Error($"[GEMI] Websocket connection has closed. Reason: {info.Type}");
             ChangeRecognizerStatus(RecognizerStatus.NotStarted);

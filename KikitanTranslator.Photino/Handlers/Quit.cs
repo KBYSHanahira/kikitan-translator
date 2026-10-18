@@ -2,10 +2,10 @@
 
 public class Quit : IHandler
 {
-    public async Task<string?>  OnDataReceived(string data)
+    public Task<string?> OnDataReceived(string data)
     {
         Environment.Exit(0);
 
-        return null;
+        return Task.FromResult<string?>(null);
     }
 }

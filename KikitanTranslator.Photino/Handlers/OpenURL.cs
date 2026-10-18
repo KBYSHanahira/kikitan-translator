@@ -5,7 +5,7 @@ namespace KikitanTranslator.Photino.Handlers;
 
 public class OpenURL : IHandler
 {
-    public async Task<string?> OnDataReceived(string data)
+    public Task<string?> OnDataReceived(string data)
     {
         if (data == "LOGFILES")
         {
@@ -16,12 +16,12 @@ public class OpenURL : IHandler
                 Verb = "open"
             });
 
-            return null;
+            return Task.FromResult<string?>(null);
         }
         
         if (!data.StartsWith("https://") || !(data.Contains("buymeacoffee.com") || data.Contains("booth.pm") ||
                                                data.Contains("github.com") || data.Contains("twitter.com") ||
-                                               data.Contains("discord.gg"))) return null;
+                                               data.Contains("discord.gg"))) return Task.FromResult<string?>(null);
 
         Process.Start(new ProcessStartInfo
         {
@@ -29,6 +29,6 @@ public class OpenURL : IHandler
             UseShellExecute = true
         });
 
-        return null;
+        return Task.FromResult<string?>(null);
     }
 }

@@ -26,7 +26,7 @@ public class GroqRecognizer : IRecognizer
     private readonly Queue<(float[] samples, bool speech)> _frameQueue = new();
     private readonly SemaphoreSlim _processingSemaphore = new(1, 1);
 
-    private string _language;
+    private string _language = null!;
 
     public GroqRecognizer(ICapture capture)
     {
@@ -84,7 +84,7 @@ public class GroqRecognizer : IRecognizer
 
         if (_isCollectingSpeech && _speechBuffer.Count > 0)
         {
-            TranscribeAsync(_speechBuffer.ToArray(), _capture.GetSampleRate());
+            _ = TranscribeAsync(_speechBuffer.ToArray(), _capture.GetSampleRate());
             _speechBuffer.Clear();
             _isCollectingSpeech = false;
         }
@@ -150,7 +150,7 @@ public class GroqRecognizer : IRecognizer
                 Log.Debug($"[GROQ] Speech discarded: samples={audio.Length}, minimumSamples=3840, capture={_capture.GetType().Name}");
                 return;
             }
-            TranscribeAsync(audio, _capture.GetSampleRate());
+            _ = TranscribeAsync(audio, _capture.GetSampleRate());
         }
     }
 

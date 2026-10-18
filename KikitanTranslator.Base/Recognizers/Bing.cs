@@ -17,16 +17,17 @@ public class Bing : IRecognizer
     public event OnRecognition? OnRecognitionReceived;
     public event OnRecognizerStatus? OnRecognizerStatusChanged;
 
-    private WebsocketClient _client;
+    private WebsocketClient _client = null!;
     private ICapture _capture;
     
     private RecognizerStatus _status;
 
-    private string _connectionId;
-    private string _currentRequestId;
+    private string _connectionId = null!;
+    private string _currentRequestId = null!;
     private uint _streamIdCounter = 1;
     private string? _currentStreamTag;
-    private string _language;
+    private string _language = null!;
+    private IErrorHandler _errorHandler = null!;
 
     private long _bytesSend;
     
@@ -52,6 +53,7 @@ public class Bing : IRecognizer
     
     public void Start(string language, IErrorHandler errorHandler)
     {
+        _errorHandler = errorHandler;
         Log.Information($"[BING] Starting recognizer: capture={_capture.GetType().Name}, language={language}, status={_status}");
         ChangeRecognizerStatus(RecognizerStatus.Connecting);
         
@@ -103,7 +105,7 @@ public class Bing : IRecognizer
             {
                 audio = new
                 {
-                    streams = new Dictionary<string, object>
+                    streams = new Dictionary<string, object?>
                     {
                         { "1", null }
                     }
@@ -220,7 +222,7 @@ public class Bing : IRecognizer
             Log.Verbose("[BING] Stream ID counter limit has been reached. Restarting Bing recognizer...");
             
             Stop();
-            Start(_language, null);
+            Start(_language, _errorHandler);
 
             return;
         }
@@ -235,7 +237,7 @@ public class Bing : IRecognizer
         {
             audio = new
             {
-                streams = new Dictionary<string, object> 
+                streams = new Dictionary<string, object?> 
                 {
                     { "1", null }
                 }

@@ -91,7 +91,7 @@ public class Program
             {
                 connector.WindowHandle = (PhotinoWindow)sender!;
 
-                messageHandler.HandleMessage(s, connector);
+                _ = messageHandler.HandleMessage(s, connector);
             })
             .Load(appUrl);
         

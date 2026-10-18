@@ -5,9 +5,9 @@ namespace KikitanTranslator.Photino.Handlers;
 
 public class UpdateApp : IHandler
 {
-    public async Task<string?> OnDataReceived(string data)
+    public Task<string?> OnDataReceived(string data)
     {
-        Task.Run(async () =>
+        _ = Task.Run(async () =>
         {
             var mgr = new UpdateManager(new GithubSource("https://github.com/YusufOzmen01/kikitan-translator", null,
                 true));
@@ -22,6 +22,6 @@ public class UpdateApp : IHandler
             }
         });
 
-        return null;
+        return Task.FromResult<string?>(null);
     }
 }

@@ -9,10 +9,10 @@ public class Connector
 {
     public PhotinoWindow? WindowHandle;
     
-    private WebSocketServer _websocketServer;
+    private WebSocketServer? _websocketServer;
     private List<IWebSocketConnection> _sockets = new();
 
-    public event OnConnectorData OnConnectorData;
+    public event OnConnectorData? OnConnectorData;
 
     public void StartWebsocket()
     {

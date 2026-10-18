@@ -328,7 +328,7 @@ public class ConfigObject : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
@@ -338,9 +338,9 @@ public delegate void OnConfigUpdate();
 
 public static class AppConfig
 {
-    public static ConfigObject ConfigObject;
+    public static ConfigObject ConfigObject = null!;
     public static event OnConfigUpdate? OnUpdate;
-    private static string _currentConfigPath;
+    private static string _currentConfigPath = null!;
 
     public static string GetAppFolder()
     {
@@ -398,7 +398,7 @@ public static class AppConfig
         Log.Verbose($"[CFG]  Saved to {_currentConfigPath}");
     }
 
-    private static void OnConfigPropertyChanged(object sender, PropertyChangedEventArgs e)
+    private static void OnConfigPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         SaveConfig();
         
