@@ -66,7 +66,7 @@ export default function QuickstartMenu({ state }: { state: app_state }) {
             <Step active={quickstartPage == 2}>
                 <StepTitle>{localization.mode_selection[lang]}</StepTitle>
                 <Media>
-                    <img className="block w-[360px]" alt="" src={
+                    <img className="block w-[420px] h-[280px]" alt="" src={
                         {
                             en: "/images/en.png",
                             jp: "/images/jp.png",
@@ -81,7 +81,7 @@ export default function QuickstartMenu({ state }: { state: app_state }) {
             <Step active={quickstartPage == 3}>
                 <StepTitle>{localization.desktop_translation[lang]}</StepTitle>
                 <Media>
-                    <img className="block w-[360px]" alt="" src={
+                    <img className="block w-[420px] h-[280px]" alt="" src={
                         {
                             en: "/images/en2.png",
                             jp: "/images/jp2.png",
@@ -96,20 +96,16 @@ export default function QuickstartMenu({ state }: { state: app_state }) {
             <Step active={quickstartPage == 4}>
                 <StepTitle>{localization.settings[lang]}</StepTitle>
                 <Media>
-                    <img className="block w-[360px]" alt="" src="/images/settings.png" />
+                    <img className="block w-[420px] h-[280px]" alt="" src="/images/settings.png" />
                 </Media>
                 <StepBody>{localization.settings_details[lang]}</StepBody>
             </Step>
 
             <Step active={quickstartPage == 5}>
                 <StepTitle>{localization.change_theme[lang]}</StepTitle>
-                {quickstartPage == 5 &&
-                    <Media>
-                        <video width={360} autoPlay loop muted className="block">
-                            <source src="/theme.mp4" type="video/mp4"></source>
-                        </video>
-                    </Media>
-                }
+                <Media>
+                    <img className="block w-[420px] h-[280px]" alt="" src="/images/theme.png" />
+                </Media>
                 <StepBody>{localization.change_theme_detail[lang]}</StepBody>
             </Step>
 
