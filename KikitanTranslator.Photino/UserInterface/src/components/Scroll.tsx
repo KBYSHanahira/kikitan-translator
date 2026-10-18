@@ -3,14 +3,10 @@
 
 import "../style/carousel.css"
 
-type ScrollProps = {
-    light_mode: boolean
-}
-
-export default function Scroll({ light_mode }: ScrollProps) {
+export default function Scroll() {
     return (
         <div className="carousel-container w-max">
-            <div className={"text-3xl text-center " + (light_mode ? "text-black" : "text-white")}>
+            <div className="text-2xl font-extrabold tracking-tight text-center text-ink">
                 {[
                     "Choose your language",
                     "言語を選択してください",

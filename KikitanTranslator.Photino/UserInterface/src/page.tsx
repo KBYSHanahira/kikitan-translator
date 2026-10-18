@@ -3,15 +3,12 @@ import * as React from 'react';
 import Kikitan from "./pages/Kikitan"
 
 import {
-    AppBar,
-    Toolbar,
-    Typography,
-    Select,
-    MenuItem,
     Button,
     IconButton,
     CircularProgress,
+    Tooltip,
 } from '@mui/material';
+import { ThemeProvider } from '@mui/material/styles';
 
 import {
     Settings,
@@ -20,7 +17,6 @@ import {
     NightsStay,
     Favorite,
     DownloadOutlined,
-    Clear,
 } from '@mui/icons-material';
 
 import Changelogs from './pages/Changelogs';
@@ -35,7 +31,9 @@ import {
 } from "./util/photino.ts";
 import QuickstartMenu from "./components/Quickstart.tsx";
 import SettingsPage from "./pages/Settings.tsx";
+import Modal from "./components/Modal.tsx";
 import {app_state} from "./util/constants.ts";
+import {buildTheme} from "./util/theme.ts";
 
 let updateViewed = false;
 
@@ -55,7 +53,13 @@ function App() {
     const [appState, setAppState] = React.useState<app_state>({});
 
     const [loaded, setLoaded] = React.useState(false)
-    
+
+    const lightMode = appState.config?.light_mode ?? false
+    const theme = React.useMemo(() => buildTheme(lightMode), [lightMode])
+
+    React.useEffect(() => {
+        document.documentElement.dataset.theme = lightMode ? "light" : "dark"
+    }, [lightMode])
 
     React.useEffect(() => {
         setTimeout(() => setLoaded(true), 300);
@@ -65,11 +69,11 @@ function App() {
             if (!updateViewed) {
                 setUpdaterText(localization.new_update_available[state.config.language])
                 setUpdaterVisible(state.server_version != null)
-                
+
                 setAppVersion(state.app_version)
                 setNewVersion(state.server_version)
             }
-            
+
             setChangelogsVisible(state.config.last_version != state.app_version)
 
             setAppState(state)
@@ -88,206 +92,155 @@ function App() {
         }
     }, [])
 
+    if (appState.config == undefined) return null
+
+    const lang = appState.config.language
+    const linuxNoAppImage = appState.is_linux && !appState.is_appimage
+
     return (
-        <>
-            {appState.config != undefined && <div
-                className={`relative transition-all duration-500 ${!loaded ? "opacity-0 pointer-events-none" : "opacity-100"} ${!appState.config.light_mode ? "bg-slate-950 text-white" : ""} select-none`}>
-                <div
-                    className={`transition-all z-20 w-full h-screen flex backdrop-blur-sm bg-transparent justify-center items-center absolute` + (!appState.config.quickstart_viewed && appState.config.language != null ? " opacity-100" : " opacity-0 pointer-events-none")}>
-                    <QuickstartMenu state={appState}></QuickstartMenu>
-                </div>
+        <ThemeProvider theme={theme}>
+            <div
+                className={`relative h-screen flex flex-col bg-bg text-ink select-none transition-opacity duration-500 ${!loaded ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
 
-                <div
-                    className={'transition-all z-30 w-full h-screen flex backdrop-blur-sm bg-transparent justify-center items-center absolute' + (donateVisible && appState.config.quickstart_viewed ? " opacity-100" : " opacity-0 pointer-events-none")}>
-                    <div
-                        className={`flex flex-col justify-center w-6/12 h-3/6 outline outline-1 ${appState.config.light_mode ? "outline-white" : "outline-slate-950"} rounded ${appState.config.light_mode ? "bg-white" : "bg-slate-950"}`}>
-                        <div className='flex flex-row justify-center'>
-                            <p className='ml-4 text-md text-center'>{localization.donation_text[appState.config.language]}</p>
+                <Modal z="z-20" open={!appState.config.quickstart_viewed && appState.config.language != null}
+                       className="w-[min(860px,92vw)] h-[min(560px,88vh)]">
+                    <QuickstartMenu state={appState}/>
+                </Modal>
+
+                <Modal open={donateVisible && appState.config.quickstart_viewed} className="w-[min(520px,90vw)] p-6 gap-5">
+                    <div className="flex items-start gap-4">
+                        <div className="w-10 h-10 shrink-0 rounded-control bg-accent-soft text-accent-text grid place-items-center">
+                            <Favorite fontSize="small"/>
                         </div>
-                        <div className='flex justify-center mt-4 gap-2 ml-4 mr-4'>
-                            <Button variant="contained" color="secondary" className='w-48' onClick={() => {
-                                openURL("https://buymeacoffee.com/sergiomarquina")
-                            }}><Favorite className='mr-2'/><p className='text-xs'>Buy Me a Coffee</p></Button>
-                            <Button sx={{
-                                backgroundColor: "#fc4d50"
-                            }} variant="contained" className='w-48' onClick={() => {
-                                openURL("https://booth.pm/en/items/6073050")
-                            }}>
-                                <img src="/boothlogo.svg" width={24} className="mr-2"></img>
-                                <p className="mt-0.5"><p className='text-xs'>Booth.pm</p></p>
-                            </Button>
-                            <Button variant="contained" className='w-48' onClick={() => {
-                                setDonateVisible(false)
-                            }}><p className='text-xs'>{localization.close[appState.config.language]}</p></Button>
+                        <p className="text-sm text-muted pt-1">{localization.donation_text[lang]}</p>
+                    </div>
+                    <div className="flex flex-wrap justify-end gap-2">
+                        <Button variant="text" color="inherit" onClick={() => setDonateVisible(false)}>
+                            {localization.close[lang]}
+                        </Button>
+                        <Button variant="outlined" onClick={() => openURL("https://booth.pm/en/items/6073050")}>
+                            <img src="/boothlogo.svg" width={18} className="mr-2" alt=""/>Booth.pm
+                        </Button>
+                        <Button variant="contained" startIcon={<Favorite/>}
+                                onClick={() => openURL("https://buymeacoffee.com/sergiomarquina")}>
+                            Buy Me a Coffee
+                        </Button>
+                    </div>
+                </Modal>
+
+                <Modal open={updaterVisible && appState.config.quickstart_viewed} className="w-[min(440px,90vw)] p-6 gap-5">
+                    {!linuxNoAppImage ? <>
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 shrink-0 rounded-control bg-accent text-accent-ink grid place-items-center">
+                                {showProgress ? <CircularProgress size={22}/> : <DownloadOutlined/>}
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                                <p className="text-lg font-semibold">{updaterText}</p>
+                                {!showProgress && <p className="text-sm text-muted">v{appVersion} → <span className="text-accent-text font-semibold">{newVersion}</span></p>}
+                            </div>
                         </div>
-                    </div>
-                </div>
-
-                <div
-                    className={'transition-all z-30 w-full h-screen flex backdrop-blur-sm bg-transparent justify-center items-center absolute' + (updaterVisible && appState.config.quickstart_viewed ? " opacity-100" : " opacity-0 pointer-events-none")}>
-                    <div
-                        className={`flex flex-row items-center w-96 ${appState.is_linux && !appState.is_appimage ? "h-80" : "h-48"} outline outline-1 ${appState.config.light_mode ? "outline-white" : "outline-slate-950"} rounded ${appState.config.light_mode ? "bg-white" : "bg-slate-950"} px-4 gap-4`}>
-                        
-                        {(!appState.is_linux || appState.is_appimage) && 
-                        <>
-                            <div className={`flex flex-col flex-1 transition-opacity duration-240 ${(updating && !showProgress) ? "opacity-0" : "opacity-100"}`}>
-                                <p className={`${showProgress ? "text-4xl" : "text-3xl"} text-center`}>{updaterText}</p>
-                                {!showProgress && <p className="text-md italic text-slate-600 text-center">{newVersion}</p>}
+                        {!showProgress &&
+                            <div className="flex justify-end gap-2">
+                                <Button variant="text" color="inherit" disabled={updating} onClick={() => {
+                                    updateViewed = true;
+                                    setUpdaterVisible(false)
+                                }}>{localization.close[lang]}</Button>
+                                <Button variant="contained" disabled={updating} startIcon={<DownloadOutlined/>} onClick={() => {
+                                    setUpdating(true)
+                                    setTimeout(() => {
+                                        setShowProgress(true)
+                                        setUpdaterText(localization.updating[lang])
+                                        update()
+                                    }, 300)
+                                }}>{localization.update[lang]}</Button>
                             </div>
-                            <div className="relative flex flex-col gap-2" style={{ width: 128, height: 104 }}>
-                                <div className={`transition-opacity duration-300 ${updating ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
-                                    <Button
-                                        variant="contained"
-                                        disabled={updating}
-                                        color="success"
-                                        className='w-32 h-12'
-                                        onClick={() => {
-                                            setUpdating(true)
-                                            setTimeout(() => {
-                                                setShowProgress(true)
-                                                setUpdaterText(localization.updating[appState.config.language])
-                                                update()
-                                            }, 300)
-                                        }}>
-                                        <p className='text-md'>
-                                            <DownloadOutlined fontSize="small" />
-                                            {localization.update[appState.config.language]}
-                                        </p>
-                                    </Button>
-                                </div>
-                                <div className={`transition-opacity duration-300 ${updating ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
-                                    <Button
-                                        variant="contained"
-                                        disabled={updating}
-                                        className='w-32 h-12'
-                                        onClick={() => {
-                                            updateViewed = true;
-                                            setUpdaterVisible(false)
-                                        }}>
-                                        <Clear fontSize="small" />
-                                        <p className='text-xs'>{localization.close[appState.config.language]}</p>
-                                    </Button>
-                                </div>
-
-                                {showProgress &&
-                                    <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 z-20`}>
-                                        <CircularProgress size={96} />
-                                    </div>
-                                }
-                            </div>
-                        </>   
                         }
-                        
-                        {(appState.is_linux && !appState.is_appimage) && 
-                        <>
-                            <div className="flex flex-col flex-1 gap-2 text-center items-center">
-                                <p className="text-4xl text-center">{updaterText}</p>
-                                <p className='text-md'>{localization.not_appimage_warning[appState.config.language]}</p>
-                                <Button
-                                    variant="contained"
-                                    disabled={updating}
-                                    className='w-32 h-12'
-                                    onClick={() => {
-                                        updateViewed = true;
-                                        setUpdaterVisible(false)
-                                    }}>
-                                    <Clear fontSize="small" />
-                                    <p className='text-xs'>{localization.close[appState.config.language]}</p>
-                                </Button>
-                            </div>
-                            
-                        </>
-                        }
-                    </div>
-                </div>
+                    </> : <>
+                        <p className="text-lg font-semibold">{updaterText}</p>
+                        <p className="text-sm text-muted">{localization.not_appimage_warning[lang]}</p>
+                        <div className="flex justify-end">
+                            <Button variant="outlined" onClick={() => {
+                                updateViewed = true;
+                                setUpdaterVisible(false)
+                            }}>{localization.close[lang]}</Button>
+                        </div>
+                    </>}
+                </Modal>
 
-                <div
-                    className={'transition-all z-30 w-full h-screen flex backdrop-blur-sm bg-transparent justify-center items-center absolute' + (settingsVisible ? " opacity-100" : " opacity-0 pointer-events-none")}>
-                    <div
-                        className={`flex flex-col justify-between  w-10/12 h-5/6 outline outline-1 ${appState.config.light_mode ? "outline-slate-400" : "outline-slate-950"} rounded bg-white`}>
-                        <SettingsPage state={appState} closeCallback={() => {
-                            setSettingsVisible(false)
-                            controlKikitan(true)
-                        }}/>
-                    </div>
-                </div>
+                <Modal open={settingsVisible} className="w-[min(880px,92vw)] h-[min(560px,88vh)]">
+                    <SettingsPage state={appState} closeCallback={() => {
+                        setSettingsVisible(false)
+                        controlKikitan(true)
+                    }}/>
+                </Modal>
+
                 {appState.config.quickstart_viewed && changelogsVisible &&
-                    <div
-                        className={'transition-all z-30 w-full h-screen flex backdrop-blur-sm bg-transparent justify-center items-center absolute' + (changelogsVisible ? " opacity-100" : " opacity-0 pointer-events-none")}>
-                        <div
-                            className={`flex flex-col justify-between  w-10/12 h-5/6 outline outline-1 ${appState.config.light_mode ? "outline-slate-400" : "outline-slate-950"} rounded bg-white`}>
-                            <Changelogs state={appState} closeCallback={() => {
-                                setConfig("last_version", appState.app_version)
-                                setChangelogsVisible(false)
-                            }}/>
-                        </div>
-                    </div>
+                    <Modal open={changelogsVisible} className="w-[min(760px,92vw)] h-[min(520px,85vh)]">
+                        <Changelogs state={appState} closeCallback={() => {
+                            setConfig("last_version", appState.app_version)
+                            setChangelogsVisible(false)
+                        }}/>
+                    </Modal>
                 }
 
-                <div className="flex flex-col h-screen z-0">
-                    <AppBar position="static">
-                        <Toolbar>
-                            <Typography className="flex" variant="h6" component="div" sx={{flexGrow: 1}}>
-                                Kikitan Translator
-                                <p className="text-sm italic ml-2 mt-2">
-                                    <a href='' onClick={(e) => {
-                                        e.preventDefault()
-
-                                        setChangelogsVisible(true)
-                                    }}>v{appVersion}</a>
-                                </p>
-                            </Typography>
-                            <div className='flex'>
-                                <Select sx={{
-                                    color: 'white',
-                                    '& .MuiSvgIcon-root': {
-                                        color: 'white'
-                                    }
-                                }} variant='outlined' className="ml-4 mr-2"
-                                        value={appState.config.speech_to_text_only ? 1 : 0}
-                                        onChange={(e) => setConfig("speech_to_text_only", e.target.value == 1)}>
-                                    <MenuItem value={0}>{localization.translation[appState.config.language]}</MenuItem>
-                                    <MenuItem value={1}>{localization.stt_only[appState.config.language]}</MenuItem>
-                                </Select>
-                                <IconButton sx={{
-                                    color: 'white',
-                                    '& .MuiSvgIcon-root': {
-                                        color: 'white'
-                                    }
-                                }} onClick={() => setConfig("light_mode", !appState.config.light_mode)}>
-                                    {appState.config.light_mode ? <NightsStay/> : <WbSunny/>}
-                                </IconButton>
-                                <IconButton sx={{
-                                    color: 'white',
-                                    '& .MuiSvgIcon-root': {
-                                        color: 'white'
-                                    }
-                                }} onClick={() => {
-                                    controlKikitan(false)
-                                    setConfig("quickstart_viewed", false)
-                                }}>
-                                    <Translate/>
-                                </IconButton>
-                                <IconButton sx={{
-                                    color: 'white',
-                                    '& .MuiSvgIcon-root': {
-                                        color: 'white'
-                                    }
-                                }} onClick={() => {
-                                    controlKikitan(false)
-                                    setSettingsVisible(true)
-                                }}>
-                                    <Settings/>
-                                </IconButton>
-                            </div>
-                        </Toolbar>
-                    </AppBar>
-                    <div className='flex flex-1 items-center align-middle flex-col mt-8'>
-                        {loaded && appState.config.quickstart_viewed && <Kikitan state={appState}/>}
+                <header className="h-14 shrink-0 flex items-center gap-4 px-5 border-b border-line bg-surface">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                        <span className="w-3 h-3 rounded-[3px] bg-accent shrink-0" aria-hidden="true"/>
+                        <span className="text-md font-extrabold tracking-tight">Kikitan</span>
+                        <span className="text-md font-semibold text-muted -ml-1 hidden sm:inline">Translator</span>
+                        <button type="button"
+                                className="ml-1 text-2xs text-muted hover:text-accent-text transition-colors"
+                                onClick={() => setChangelogsVisible(true)}>
+                            v{appVersion}
+                        </button>
                     </div>
-                </div>
-            </div>}
-        </>
+
+                    <div className="flex-1"/>
+
+                    <div role="tablist" className="flex p-1 gap-1 rounded-control bg-raised border border-line">
+                        {[
+                            {value: false, label: localization.translation[lang]},
+                            {value: true, label: localization.stt_only[lang]},
+                        ].map(opt => {
+                            const active = appState.config.speech_to_text_only == opt.value
+                            return <button key={String(opt.value)} type="button" role="tab" aria-selected={active}
+                                           onClick={() => setConfig("speech_to_text_only", opt.value)}
+                                           className={`h-7 px-3 rounded-[4px] text-2xs font-semibold transition-colors ${active ? "bg-accent text-accent-ink" : "text-muted hover:text-ink"}`}>
+                                {opt.label}
+                            </button>
+                        })}
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                        <Tooltip title={localization.change_theme[lang]}>
+                            <IconButton onClick={() => setConfig("light_mode", !appState.config.light_mode)}>
+                                {appState.config.light_mode ? <NightsStay fontSize="small"/> : <WbSunny fontSize="small"/>}
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title={localization.mode_selection[lang]}>
+                            <IconButton onClick={() => {
+                                controlKikitan(false)
+                                setConfig("quickstart_viewed", false)
+                            }}>
+                                <Translate fontSize="small"/>
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title={localization.settings[lang]}>
+                            <IconButton onClick={() => {
+                                controlKikitan(false)
+                                setSettingsVisible(true)
+                            }}>
+                                <Settings fontSize="small"/>
+                            </IconButton>
+                        </Tooltip>
+                    </div>
+                </header>
+
+                <main className="flex-1 min-h-0 flex flex-col">
+                    {loaded && appState.config.quickstart_viewed && <Kikitan state={appState}/>}
+                </main>
+            </div>
+        </ThemeProvider>
     )
 }
 
