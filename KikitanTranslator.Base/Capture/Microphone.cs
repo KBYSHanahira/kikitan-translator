@@ -20,7 +20,8 @@ public class Microphone : ICapture
     private AudioCaptureDevice? _captureDevice;
     private IErrorHandler _errorHandler;
     private SileroVad _vad;
-    
+    private int _channels = 1;
+
     public uint GetSampleRate() => 16000;
 
     public Microphone(string sileroModelPath, IErrorHandler errorHandler)
@@ -34,12 +35,13 @@ public class Microphone : ICapture
     {
         _engine.UpdateAudioDevicesInfo();
 
-        return _engine.CaptureDevices;
+        return CaptureDeviceNames.Fix(_engine.CaptureDevices);
     }
 
     public bool Start()
     {
         _engine.UpdateAudioDevicesInfo();
+        var devices = CaptureDeviceNames.Fix(_engine.CaptureDevices);
         if (_captureDevice != null) Stop();
 
         DeviceInfo? device;
@@ -54,19 +56,19 @@ public class Microphone : ICapture
 
         if (AppConfig.ConfigObject.Microphone.Length == 0)
         {
-            device = _engine.CaptureDevices.First(d => d.IsDefault);
+            device = devices.First(d => d.IsDefault);
             AppConfig.ConfigObject.Microphone = device.Value.Name;
-                
+
             Log.Warning($"[MIC]  No microphone was selected, using the default device ({device.Value.Name}) for capture");
         }
-        else if (_engine.CaptureDevices.Any(d => d.Name == AppConfig.ConfigObject.Microphone))
+        else if (devices.Any(d => d.Name == AppConfig.ConfigObject.Microphone))
         {
-            device = _engine.CaptureDevices.First(d => d.Name == AppConfig.ConfigObject.Microphone);
+            device = devices.First(d => d.Name == AppConfig.ConfigObject.Microphone);
         }
         else
         {
-            device = _engine.CaptureDevices.FirstOrDefault(d => d.IsDefault);
-            if (device == null) device = _engine.CaptureDevices[0];
+            // DeviceInfo is a struct, so FirstOrDefault returns an empty value (never null) when there is no default.
+            device = devices.Any(d => d.IsDefault) ? devices.First(d => d.IsDefault) : devices[0];
                     
             Log.Warning($"[MIC]  The selected mic ({AppConfig.ConfigObject.Microphone}) is not available. Switching to the system default ({device.Value.Name})");
             
@@ -77,7 +79,7 @@ public class Microphone : ICapture
         
         try
         {
-            _captureDevice = _engine.InitializeCaptureDevice(device, audioFormat);
+            _captureDevice = InitializeCaptureDevice(device, audioFormat);
             _captureDevice.OnAudioProcessed += AudioProcessCallback;
             _captureDevice.Start();
             _apmModifier = new WebRtcApmModifier(
@@ -138,9 +140,37 @@ public class Microphone : ICapture
         _paused = false;
     }
 
+    private AudioCaptureDevice InitializeCaptureDevice(DeviceInfo? device, AudioFormat monoFormat)
+    {
+        try
+        {
+            _channels = 1;
+
+            return _engine.InitializeCaptureDevice(device, monoFormat);
+        }
+        catch (Exception e)
+        {
+            // Some devices (e.g. Sound BlasterX G1) reject mono capture over WASAPI but accept stereo,
+            // so capture in stereo and downmix to mono in the callback.
+            Log.Warning($"[MIC]  Mono capture failed ({e.Message}). Retrying in stereo");
+            _channels = 2;
+
+            return _engine.InitializeCaptureDevice(device, monoFormat with { Channels = 2, Layout = ChannelLayout.Stereo });
+        }
+    }
+
     private void AudioProcessCallback(Span<float> samples, Capability capability)
     {
         if (_paused) return;
+
+        if (_channels == 2)
+        {
+            var mono = new float[samples.Length / 2];
+            for (var i = 0; i < mono.Length; i++) mono[i] = (samples[2 * i] + samples[2 * i + 1]) * 0.5f;
+
+            samples = mono;
+        }
+
         _apmModifier?.Process(samples, samples.Length);
 
         bool part1 = _vad.SpeechDetection(samples.Slice(0, 480));

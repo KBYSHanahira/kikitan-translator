@@ -138,25 +138,26 @@ public class Manager
             while (true)
             {
                 engine.UpdateAudioDevicesInfo();
-                foreach (var mic in engine.CaptureDevices)
+                var devices = CaptureDeviceNames.Fix(engine.CaptureDevices);
+                foreach (var mic in devices)
                 {
                     mics.Add(new Mic { Name = mic.Name, Default = mic.IsDefault });
                 }
-                
+
                 if (_appState.Microphones.Length != 0 && mics.Count != _appState.Microphones.Length)
                 {
                     _appState.Microphones = mics.ToArray();
-                    
+
                     SendUpdateToUI();
                 }
 
-                if (_appState.Config.Microphone.Length != 0 && engine.CaptureDevices.Length != 0 &&
+                if (_appState.Config.Microphone.Length != 0 && devices.Length != 0 &&
                     !mics.Exists(m => m.Name == _appState.Config.Microphone))
                 {
                     // DeviceInfo is a struct, so FirstOrDefault returns an empty value (never null) when there is no default.
-                    var device = engine.CaptureDevices.Any(d => d.IsDefault)
-                        ? engine.CaptureDevices.First(d => d.IsDefault)
-                        : engine.CaptureDevices[0];
+                    var device = devices.Any(d => d.IsDefault)
+                        ? devices.First(d => d.IsDefault)
+                        : devices[0];
                     
                     Log.Warning($"[MIC]  The selected mic ({AppConfig.ConfigObject.Microphone}) is not available. Switching to the system default ({device.Name})");
                     
