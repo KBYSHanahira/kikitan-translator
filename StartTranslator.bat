@@ -13,6 +13,13 @@ rem    - .NET 9 SDK (builds and runs the app)
 rem  WebView2 Runtime is installed via Microsoft's official installer only if
 rem  Windows does not already have it (Windows 11 ships with it).
 rem
+rem  The app is built in Release mode: the interface is bundled into the app,
+rem  so only the app window stays open and this console closes itself.
+rem  It is rebuilt only when a source file changed since the last build.
+rem
+rem  "StartTranslator.bat dev" runs the old developer mode instead (Vite dev
+rem  server with live reload + Debug build, three windows).
+rem
 rem  Set KIKITAN_FORCE_LOCAL=1 to ignore system-wide Node/.NET and use .tools.
 rem ===========================================================================
 
@@ -20,6 +27,7 @@ set "ROOT=%~dp0"
 set "TOOLS=%ROOT%.tools"
 set "UI_DIR=%ROOT%KikitanTranslator.Photino\UserInterface"
 set "APP_DIR=%ROOT%KikitanTranslator.Photino"
+set "APP_EXE=%APP_DIR%\bin\Release\net9.0\win-x64\KikitanTranslator.Photino.exe"
 set "UI_PORT=1420"
 set "NODE_VERSION=24.20.0"
 set "DOTNET_CHANNEL=9.0"
@@ -39,9 +47,30 @@ call :ensure_node || goto :fail
 call :ensure_dotnet || goto :fail
 call :ensure_webview2 || goto :fail
 call :ensure_ui_deps || goto :fail
+
+if /i "%~1"=="dev" goto :run_dev
+
+echo [5/5] Starting Kikitan Translator...
+powershell -NoProfile -ExecutionPolicy Bypass -File "%ROOT%scripts\needs-build.ps1" -Root "%ROOT%." -Exe "%APP_EXE%"
+if not errorlevel 1 goto :launch
+echo       Building the app (only after changes, the first build can take a few minutes)...
+pushd "%APP_DIR%"
+dotnet build -c Release -p:SkipVelopack=true -nologo -v q
+set "BUILD_EXIT=%ERRORLEVEL%"
+popd
+if not "%BUILD_EXIT%"=="0" goto :fail
+
+:launch
+if not exist "%APP_EXE%" goto :fail
+rem The Release app is a windowed program and runs from its own folder, so this
+rem console is not needed any more and closes as soon as the app is launched.
+start "" "%APP_EXE%"
+exit /b 0
+
+:run_dev
 call :start_ui || goto :fail
 
-echo [5/5] Starting Kikitan Translator (first start can take a minute)...
+echo [5/5] Starting Kikitan Translator in developer mode...
 rem Debug builds load Resources/wwwroot relative to the working directory,
 rem so the app must run from its project folder.
 pushd "%APP_DIR%"

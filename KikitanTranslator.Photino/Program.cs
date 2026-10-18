@@ -94,7 +94,12 @@ public class Program
                 _ = messageHandler.HandleMessage(s, connector);
             })
             .Load(appUrl);
-        
+
+        // Opt-in WebView2 flags for debugging, e.g. KIKITAN_WEBVIEW2_ARGS=--remote-debugging-port=9222.
+        // Photino sets its own WebView2 options, so WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS is ignored.
+        var webViewArgs = Environment.GetEnvironmentVariable("KIKITAN_WEBVIEW2_ARGS");
+        if (!string.IsNullOrWhiteSpace(webViewArgs)) window.SetBrowserControlInitParameters(webViewArgs);
+
         window.WindowCreated += (_, _) =>
         {
             UpdateResolution(window);

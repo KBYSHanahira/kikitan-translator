@@ -80,7 +80,7 @@
 
     <Target Name="VelopackPack"
             AfterTargets="BuildAndCopyOverlay"
-            Condition="'$(Configuration)' == 'Release' AND '$(RuntimeIdentifier)' == 'win-x64'">
+            Condition="'$(Configuration)' == 'Release' AND '$(RuntimeIdentifier)' == 'win-x64' AND '$(SkipVelopack)' != 'true'">
         <RemoveDir Directories="$(OutDir)Release" />
         <Exec Command="vpk pack --packId $(PackageId) --packVersion $(Version) --packDir &quot;$(MSBuildProjectDirectory)/bin/Release/net9.0/win-x64&quot; --mainExe KikitanTranslator.Photino.exe --icon &quot;$(MSBuildProjectDirectory)/Resources/wwwroot/kikitan_logo.ico&quot; --packTitle &quot;$(Title)&quot; -o &quot;$(OutDir)Release&quot; -f net9.0-x64-runtime,net9.0-x64-aspnetcore,net9.0-x64-desktop,webview2" />
     </Target>
