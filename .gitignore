@@ -4,3 +4,5 @@ Releases
 build-dir
 .tools
 .claude/
+.idea/
+*.DotSettings.user
