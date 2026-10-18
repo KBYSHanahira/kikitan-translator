@@ -114,16 +114,8 @@ export default function QuickstartMenu({ state }: { state: app_state }) {
                 <StepBody>{localization.thank_you_details[lang]}</StepBody>
                 <div className="flex flex-wrap justify-center gap-2 mt-2">
                     <Button disabled={quickstartPage != LAST_PAGE} variant="outlined" startIcon={<GitHub/>}
-                            onClick={() => openURL("https://github.com/YusufOzmen01/kikitan-translator")}>
+                            onClick={() => openURL("https://github.com/KBYSHanahira/kikitan-translator")}>
                         {localization.open_repo[lang]}
-                    </Button>
-                    <Button disabled={quickstartPage != LAST_PAGE} variant="outlined"
-                            onClick={() => openURL("https://buymeacoffee.com/sergiomarquina")}>
-                        <img src="/buymeacoffeelogo.svg" width={22} className="mr-2" alt=""/>Buy Me a Coffee
-                    </Button>
-                    <Button disabled={quickstartPage != LAST_PAGE} variant="outlined"
-                            onClick={() => openURL("https://booth.pm/en/items/6073050")}>
-                        <img src="/boothlogo.svg" width={18} className="mr-2" alt=""/>Booth.pm
                     </Button>
                 </div>
             </Step>

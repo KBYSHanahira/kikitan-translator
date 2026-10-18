@@ -204,10 +204,10 @@ export const localization = {
         kr: "Kikitan을 사용해 주셔서 감사합니다!",
     },
     thank_you_details: {
-        en: "Kikitan will always be free and open source! If you want to support the project, you can do so from Buy Me a Coffee or through Booth.pm!",
-        jp: "Kikitanは今後も無料のオープンソースソフトウェアとして提供されます。プロジェクトを支援していただける場合は、Buy Me a CoffeeまたはBooth.pmからご支援いただけます！",
-        cn: "Kikitan将永远免费且开源！如果您想支持该项目，可以通过Buy Me a Coffee或Booth.pm进行支持！",
-        kr: "Kikitan은 항상 무료이며 오픈 소스입니다! 프로젝트를 지원하고 싶으시다면 Buy Me a Coffee 또는 Booth.pm을 통해 후원하실 수 있습니다!",
+        en: "Kikitan will always be free and open source!",
+        jp: "Kikitanは今後も無料のオープンソースソフトウェアとして提供されます。",
+        cn: "Kikitan将永远免费且开源！",
+        kr: "Kikitan은 항상 무료이며 오픈 소스입니다!",
     },
     next: { en: "Next", jp: "次へ", cn: "下一页", kr: "다음" },
     previous: {
@@ -372,12 +372,6 @@ export const localization = {
         jp: "Googleのサーバーにアクセスできません。ファイアウォールで通信がブロックされていないか確認してください。Googleへのアクセスが制限されている地域（例：中国）では、VPNが正常に動作しているか確認してください！",
         cn: "无法访问Google服务器。请确保您的防火墙设置未阻止请求。若您位于屏蔽Google的国家（如中国），请确认VPN运行正常！",
         kr: "Google 서버에 접근할 수 없습니다. 방화벽 설정이 요청을 차단하고 있지 않은지 확인하세요. Google이 차단된 국가(예: 중국)에 계신 경우 VPN이 정상 작동 중인지 확인하세요!",
-    },
-    donation_text: {
-        en: "Kikitan is free and will always stay free. However, any support is hugely welcome! Since I am still a student, anything I receive helps me live better! So, if you enjoy using Kikitan, considering donating!",
-        jp: "Kikitanは無料で、今後も無料で提供されます。とはいえ、ご支援いただけると大変助かります！私はまだ学生のため、いただいたご支援は生活の大きな助けになります。Kikitanを気に入っていただけたら、寄付をご検討ください！",
-        cn: "Kikitan是免费的，将来也会一直免费。不过，任何形式的支持都非常欢迎！由于我还是一名学生，收到的每一份支持都能让我生活得更好。如果您喜欢使用Kikitan，欢迎考虑捐赠！",
-        kr: "Kikitan은 무료이며 앞으로도 항상 무료입니다. 그래도 어떤 형태의 지원이든 큰 힘이 됩니다! 아직 학생이기 때문에 받는 모든 것이 생활에 도움이 됩니다. Kikitan을 즐겁게 사용하고 계신다면 후원을 고려해 주세요!",
     },
     new_update_available: {
         en: "A new update is available!",

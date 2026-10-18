@@ -15,9 +15,7 @@ import {
 } from "@mui/material";
 
 import {
-    X as XIcon,
     GitHub as GitHubIcon,
-    Favorite as FavoriteIcon,
     KeyboardVoice as KeyboardVoiceIcon,
     PlayArrow as PlayArrowIcon,
     Pause as PauseIcon,
@@ -314,18 +312,8 @@ export default function Kikitan({ state }: { state: app_state }) {
                 <div className="flex-1"/>
 
                 <div className="flex items-center gap-0.5">
-                    <IconButton size="small" aria-label="X" onClick={() => openURL("https://twitter.com/marquina_osu")}>
-                        <XIcon fontSize="small"/>
-                    </IconButton>
-                    <IconButton size="small" aria-label="Buy Me a Coffee" onClick={() => openURL("https://buymeacoffee.com/sergiomarquina")}>
-                        <FavoriteIcon fontSize="small"/>
-                    </IconButton>
-                    <IconButton size="small" aria-label="GitHub" onClick={() => openURL("https://github.com/YusufOzmen01/kikitan-translator")}>
+                    <IconButton size="small" aria-label="GitHub" onClick={() => openURL("https://github.com/KBYSHanahira/kikitan-translator")}>
                         <GitHubIcon fontSize="small"/>
-                    </IconButton>
-                    <IconButton size="small" aria-label="Discord" onClick={() => openURL("https://discord.gg/jpkYCgpBGV")}>
-                        <img src="/discordlogo.webp" width={18} height={18} alt=""
-                             className={state.config.light_mode ? "opacity-70" : "invert opacity-70"}/>
                     </IconButton>
                 </div>
             </footer>

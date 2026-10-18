@@ -15,7 +15,6 @@ import {
     Translate,
     WbSunny,
     NightsStay,
-    Favorite,
     DownloadOutlined,
 } from '@mui/icons-material';
 
@@ -23,7 +22,6 @@ import Changelogs from './pages/Changelogs';
 import {localization} from './util/localization';
 import {
     controlKikitan,
-    openURL,
     registerStateCallback,
     sendAppState,
     setConfig,
@@ -40,7 +38,6 @@ let updateViewed = false;
 function App() {
     const [changelogsVisible, setChangelogsVisible] = React.useState(false)
     const [settingsVisible, setSettingsVisible] = React.useState(false)
-    const [donateVisible, setDonateVisible] = React.useState(false)
     const [updaterVisible, setUpdaterVisible] = React.useState(false)
     const [updating, setUpdating] = React.useState(false)
     const [showProgress, setShowProgress] = React.useState(false)
@@ -79,17 +76,6 @@ function App() {
             setAppState(state)
             setStateUpdated(!stateUpdated)
         })
-
-        if (localStorage.getItem("last_donation") == null) {
-            localStorage.setItem("last_donation", "1")
-        } else {
-            const last = parseInt(localStorage.getItem("last_donation")!)
-
-            if ((last + 60 * 60 * 12 * 1000) <= Date.now()) {
-                setDonateVisible(true)
-                localStorage.setItem("last_donation", `${Date.now()}`)
-            }
-        }
     }, [])
 
     if (appState.config == undefined) return null
@@ -105,27 +91,6 @@ function App() {
                 <Modal z="z-20" open={!appState.config.quickstart_viewed && appState.config.language != null}
                        className="w-[min(860px,92vw)] h-[min(560px,88vh)]">
                     <QuickstartMenu state={appState}/>
-                </Modal>
-
-                <Modal open={donateVisible && appState.config.quickstart_viewed} className="w-[min(520px,90vw)] p-6 gap-5">
-                    <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 shrink-0 rounded-control bg-accent-soft text-accent-text grid place-items-center">
-                            <Favorite fontSize="small"/>
-                        </div>
-                        <p className="text-sm text-muted pt-1">{localization.donation_text[lang]}</p>
-                    </div>
-                    <div className="flex flex-wrap justify-end gap-2">
-                        <Button variant="text" color="inherit" onClick={() => setDonateVisible(false)}>
-                            {localization.close[lang]}
-                        </Button>
-                        <Button variant="outlined" onClick={() => openURL("https://booth.pm/en/items/6073050")}>
-                            <img src="/boothlogo.svg" width={18} className="mr-2" alt=""/>Booth.pm
-                        </Button>
-                        <Button variant="contained" startIcon={<Favorite/>}
-                                onClick={() => openURL("https://buymeacoffee.com/sergiomarquina")}>
-                            Buy Me a Coffee
-                        </Button>
-                    </div>
                 </Modal>
 
                 <Modal open={updaterVisible && appState.config.quickstart_viewed} className="w-[min(440px,90vw)] p-6 gap-5">
