@@ -20,10 +20,20 @@ export type config = {
     gemini_api_key: string;
     last_version: string;
     send_without_waiting_for_finish: boolean;
+    tts_enabled: boolean;
+    tts_device: string;
+    tts_voice: string;
+    rvc_enabled: boolean;
+    rvc_model_path: string;
+    rvc_transpose: number;
+    rvc_use_gpu: boolean;
 }
 
 export type app_state = {
     microphones: { name: string, default: boolean }[];
+    speakers: { name: string, default: boolean }[];
+    voices: { id: string, name: string, language: string }[];
+    rvc_status: { state: "off" | "installing" | "converting" | "downloading" | "loading" | "ready" | "error", progress: number, detail: string };
     config: config;
     status: 0 | 1 | 2;
     app_version: string;

@@ -17,6 +17,7 @@ import {
 import {
     GitHub as GitHubIcon,
     KeyboardVoice as KeyboardVoiceIcon,
+    RecordVoiceOver as RecordVoiceOverIcon,
     PlayArrow as PlayArrowIcon,
     Pause as PauseIcon,
     Keyboard,
@@ -302,12 +303,34 @@ export default function Kikitan({ state }: { state: app_state }) {
                 </div>
 
                 <Tooltip title={state.is_linux ? localization.desktop_translation_warning[lang] : ""}>
-                    <label className={`flex items-center gap-1 text-sm ${state.config.desktop_translation ? "text-ink" : "text-muted"}`}>
+                    <label className={`flex items-center gap-1 text-sm whitespace-nowrap ${state.config.desktop_translation ? "text-ink" : "text-muted"}`}>
                         <Switch size="small" checked={state.config.desktop_translation} disabled={state.is_linux}
                                 onChange={e => setConfig("desktop_translation", e.target.checked)}/>
                         {state.config.desktop_translation ? localization.desktop_capture_enabled[lang] : localization.enable_desktop_capture[lang]}
                     </label>
                 </Tooltip>
+
+                <div className="flex items-center gap-1 min-w-0">
+                    <Tooltip title={localization.text_to_speech_tooltip[lang]}>
+                        <label className={`flex items-center gap-1 ${state.config.tts_enabled ? "text-ink" : "text-muted"}`}>
+                            <Switch size="small" checked={state.config.tts_enabled}
+                                    inputProps={{ "aria-label": localization.text_to_speech[lang] }}
+                                    onChange={e => setConfig("tts_enabled", e.target.checked)}/>
+                            <RecordVoiceOverIcon fontSize="small" className="shrink-0"/>
+                        </label>
+                    </Tooltip>
+                    <Select size="small" sx={{ width: 170 }} disabled={!state.config.tts_enabled}
+                            value={state.speakers.some(s => s.name == state.config.tts_device) ? state.config.tts_device : ""}
+                            displayEmpty
+                            onChange={(e) => setConfig("tts_device", e.target.value)}>
+                        <MenuItem value="">{localization.system_default_device[lang]}</MenuItem>
+                        {state.speakers.map((element) => (
+                            <MenuItem key={element.name} value={element.name}>
+                                {element.name}{element.default ? ` (${localization.default[lang]})` : ""}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </div>
 
                 <div className="flex-1"/>
 

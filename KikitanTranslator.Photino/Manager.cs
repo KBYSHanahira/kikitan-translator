@@ -6,11 +6,13 @@ using System.Runtime.InteropServices;
 using KikitanTranslator.Base;
 using KikitanTranslator.Base.Outputs;
 using KikitanTranslator.Base.Recognizers;
+using KikitanTranslator.Base.Rvc;
 using KikitanTranslator.Base.Translators;
 using KikitanTranslator.Capture;
 using KikitanTranslator.Photino.Handlers;
 using KikitanTranslator.Recognizers;
 using KikitanTranslator.Utility;
+using NAudio.CoreAudioApi;
 using Newtonsoft.Json;
 using Photino.NET;
 using Serilog;
@@ -32,6 +34,9 @@ public class Mic
 public class AppState
 {
     [JsonProperty("microphones")] public Mic[] Microphones = null!;
+    [JsonProperty("speakers")] public Mic[] Speakers = [];
+    [JsonProperty("voices")] public TtsVoice[] Voices = [];
+    [JsonProperty("rvc_status")] public RvcStatus RvcStatus = new();
     [JsonProperty("config")] public ConfigObject Config = null!;
     [JsonProperty("status")] public int Status;
     [JsonProperty("app_version")] public string AppVersion = "Developer Build";
@@ -56,6 +61,7 @@ public class Manager
     private ITranslator? _translator;
     private Loopback _loopback;
     private Microphone _mic;
+    private TextToSpeech _tts = new();
     private AppState _appState = new () { Microphones = [] };
     private IErrorHandler _errorHandler;
     private bool _running;
@@ -82,6 +88,7 @@ public class Manager
         #endif
         
         _appState.IsLinux = !RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        _appState.Voices = WindowsVoices.List();
         _appState.IsAppimage = _appState.IsLinux && Environment.GetEnvironmentVariable("KIKITAN_NOT_APPIMAGE") == null;
         _connector = connector;
 
@@ -95,9 +102,19 @@ public class Manager
             SendUpdateToUI();
         });
         
+        _tts.Rvc.StatusChanged += () =>
+        {
+            _appState.RvcStatus = _tts.Rvc.Status;
+
+            SendUpdateToUI();
+        };
+        // Loads the RVC model in the background right away, so it is ready by the time Kikitan is started.
+        _tts.Rvc.Refresh();
+
         AppConfig.OnUpdate += () =>
         {
             _appState.Config = AppConfig.ConfigObject;
+            _tts.Rvc.Refresh();
 
             SendUpdateToUI();
         };
@@ -172,6 +189,14 @@ public class Manager
                 
                 mics.Clear();
 
+                var speakers = CaptureDeviceNames.Fix(engine.PlaybackDevices, DataFlow.Render).Select(d => new Mic { Name = d.Name, Default = d.IsDefault }).ToArray();
+                if (!speakers.Select(d => d.Name).SequenceEqual(_appState.Speakers.Select(d => d.Name)))
+                {
+                    _appState.Speakers = speakers;
+
+                    SendUpdateToUI();
+                }
+
                 await Task.Delay(500);
             }
         });
@@ -242,6 +267,22 @@ public class Manager
         {
             _microphoneKikitan.AddOutput(new OSC("/microphone"));
         }
+
+        if (AppConfig.ConfigObject.TtsEnabled)
+        {
+            _tts.Start();
+
+            _microphoneKikitan.AddOutput(new Custom((r, t, f) =>
+            {
+                if (AppConfig.ConfigObject.DisableWhenMuted && _appState.IsMuted)
+                {
+                    if (f) Log.Debug("[TTS]  Speech skipped: VRChat microphone is muted");
+                    return;
+                }
+
+                _tts.Send(r, t, f);
+            }, false));
+        }
         
         _microphoneKikitan.OnRecognizerStatusChanged += s =>
         {
@@ -296,6 +337,7 @@ public class Manager
         Log.Information($"[APP] Stopping...");
         _microphoneKikitan?.Dispose();
         _desktopKikitan?.Dispose();
+        _tts.Stop();
 
         _running = false;
         

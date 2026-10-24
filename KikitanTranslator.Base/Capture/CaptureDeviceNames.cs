@@ -10,10 +10,11 @@ namespace KikitanTranslator.Capture;
 /// Wasapi actually opens the DirectSound backend. DirectSound reports device names in the ANSI code
 /// page, which SoundFlow decodes as UTF-8, so non-ASCII names (e.g. Japanese) come out garbled.
 /// DirectSound device IDs are the WASAPI endpoint GUIDs, so the real names are looked up from Core Audio.
+/// Playback devices have the same problem, so pass <see cref="DataFlow.Render"/> for those.
 /// </summary>
 public static class CaptureDeviceNames
 {
-    public static DeviceInfo[] Fix(DeviceInfo[] devices)
+    public static DeviceInfo[] Fix(DeviceInfo[] devices, DataFlow flow = DataFlow.Capture)
     {
         if (!OperatingSystem.IsWindows() || devices.Length == 0) return devices;
 
@@ -22,16 +23,16 @@ public static class CaptureDeviceNames
             using var enumerator = new MMDeviceEnumerator();
 
             var names = new Dictionary<Guid, string>();
-            foreach (var endpoint in enumerator.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.Active))
+            foreach (var endpoint in enumerator.EnumerateAudioEndPoints(flow, DeviceState.Active))
             {
                 if (TryParseEndpointGuid(endpoint.ID, out var guid)) names[guid] = endpoint.FriendlyName;
                 endpoint.Dispose();
             }
 
             Guid? defaultGuid = null;
-            if (enumerator.HasDefaultAudioEndpoint(DataFlow.Capture, Role.Console))
+            if (enumerator.HasDefaultAudioEndpoint(flow, Role.Console))
             {
-                using var defaultEndpoint = enumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Console);
+                using var defaultEndpoint = enumerator.GetDefaultAudioEndpoint(flow, Role.Console);
                 if (TryParseEndpointGuid(defaultEndpoint.ID, out var guid)) defaultGuid = guid;
             }
 
@@ -40,7 +41,7 @@ public static class CaptureDeviceNames
             {
                 var guid = ReadDeviceGuid(device);
 
-                // The all-zero GUID is DirectSound's "Primary Sound Capture Driver", an alias of the system
+                // The all-zero GUID is DirectSound's "Primary Sound Capture/Playback Driver", an alias of the system
                 // default device. It is dropped and the real default device is flagged instead.
                 if (guid == Guid.Empty) continue;
 
@@ -60,7 +61,7 @@ public static class CaptureDeviceNames
         }
         catch (Exception e)
         {
-            Log.Warning($"[MIC]  Unable to resolve capture device names: {e.Message}");
+            Log.Warning($"[MIC]  Unable to resolve {(flow == DataFlow.Render ? "playback" : "capture")} device names: {e.Message}");
 
             return devices;
         }

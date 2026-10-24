@@ -107,6 +107,41 @@ public class UpdateConfig(Manager manager) : IHandler
                 AppConfig.ConfigObject.GeminiApiKey = (string) d.Value;
                 
                 break;
+            case "tts_enabled":
+                AppConfig.ConfigObject.TtsEnabled = (bool) d.Value;
+                
+                break;
+            case "tts_device":
+                AppConfig.ConfigObject.TtsDevice = (string) d.Value;
+                
+                break;
+            case "tts_voice":
+                AppConfig.ConfigObject.TtsVoice = (string) d.Value;
+                // The voice is looked up for every message, so the running pipeline picks it up as is
+                doNotRestart = true;
+                
+                break;
+            // The RVC model is (re)loaded in the background on config updates and used live, so none of these restart
+            case "rvc_enabled":
+                AppConfig.ConfigObject.RvcEnabled = (bool) d.Value;
+                doNotRestart = true;
+                
+                break;
+            case "rvc_model_path":
+                AppConfig.ConfigObject.RvcModelPath = (string) d.Value;
+                doNotRestart = true;
+                
+                break;
+            case "rvc_use_gpu":
+                AppConfig.ConfigObject.RvcUseGpu = (bool) d.Value;
+                doNotRestart = true;
+                
+                break;
+            case "rvc_transpose":
+                AppConfig.ConfigObject.RvcTranspose = Convert.ToInt32((long) d.Value);
+                doNotRestart = true;
+                
+                break;
             case "last_version":
                 AppConfig.ConfigObject.LastVersion = (string) d.Value;
                 doNotRestart = true;

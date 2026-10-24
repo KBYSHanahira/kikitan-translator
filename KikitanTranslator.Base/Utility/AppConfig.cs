@@ -326,6 +326,124 @@ public class ConfigObject : INotifyPropertyChanged
         }
     }
 
+    [JsonProperty("tts_enabled")] private bool _ttsEnabled = false;
+
+    [JsonIgnore]
+    public bool TtsEnabled
+    {
+        get => _ttsEnabled;
+        set
+        {
+            if (_ttsEnabled != value)
+            {
+                _ttsEnabled = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    // Playback device the speech is played on; empty means the system default
+    [JsonProperty("tts_device")] private string _ttsDevice = string.Empty;
+
+    [JsonIgnore]
+    public string TtsDevice
+    {
+        get => _ttsDevice;
+        set
+        {
+            if (_ttsDevice != value)
+            {
+                _ttsDevice = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    // SAPI token ID of the preferred Windows voice, or "google". Empty, or a voice for another language,
+    // means the first Windows voice for the spoken language, then Google.
+    [JsonProperty("tts_voice")] private string _ttsVoice = string.Empty;
+
+    [JsonIgnore]
+    public string TtsVoice
+    {
+        get => _ttsVoice;
+        set
+        {
+            if (_ttsVoice != value)
+            {
+                _ttsVoice = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    [JsonProperty("rvc_enabled")] private bool _rvcEnabled = false;
+
+    [JsonIgnore]
+    public bool RvcEnabled
+    {
+        get => _rvcEnabled;
+        set
+        {
+            if (_rvcEnabled != value)
+            {
+                _rvcEnabled = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    // RVC voice model exported to ONNX with RVC WebUI
+    [JsonProperty("rvc_model_path")] private string _rvcModelPath = string.Empty;
+
+    [JsonIgnore]
+    public string RvcModelPath
+    {
+        get => _rvcModelPath;
+        set
+        {
+            if (_rvcModelPath != value)
+            {
+                _rvcModelPath = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    // Run RVC on the GPU through DirectML (faster) or on the CPU (leaves the GPU alone)
+    [JsonProperty("rvc_use_gpu")] private bool _rvcUseGpu = true;
+
+    [JsonIgnore]
+    public bool RvcUseGpu
+    {
+        get => _rvcUseGpu;
+        set
+        {
+            if (_rvcUseGpu != value)
+            {
+                _rvcUseGpu = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    // Pitch shift in semitones applied before conversion, e.g. +12 for a male TTS voice into a female model
+    [JsonProperty("rvc_transpose")] private int _rvcTranspose = 0;
+
+    [JsonIgnore]
+    public int RvcTranspose
+    {
+        get => _rvcTranspose;
+        set
+        {
+            if (_rvcTranspose != value)
+            {
+                _rvcTranspose = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)

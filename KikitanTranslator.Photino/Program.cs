@@ -28,7 +28,10 @@ public class Program
         var exeDir = AppContext.BaseDirectory;
         Directory.SetCurrentDirectory(exeDir);
         PhotinoServer.CreateStaticFileServer(args, out string baseUrl).RunAsync();
-        string appUrl = $"{baseUrl}/index.html";
+        // The static file server marks every file as cacheable for a year, index.html included, so WebView2 kept
+        // showing the previous build's UI. A query string that changes with each build forces a fresh index.html.
+        var builtAt = File.GetLastWriteTimeUtc(Path.Combine(exeDir, "wwwroot", "index.html")).Ticks;
+        string appUrl = $"{baseUrl}/index.html?v={builtAt}";
 #endif
         bool noUI = Array.Exists(args, e => e.Trim().Contains("--no-ui"));
         
@@ -50,6 +53,7 @@ public class Program
         messageHandler.RegisterHandler("open_url", new OpenURL());
         messageHandler.RegisterHandler("update", new UpdateApp());
         messageHandler.RegisterHandler("fetch", new Fetch());
+        messageHandler.RegisterHandler("pick_rvc_model", new PickRvcModel(connector));
 
         if (noUI)
         {

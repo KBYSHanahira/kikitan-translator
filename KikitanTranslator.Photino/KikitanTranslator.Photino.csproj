@@ -12,6 +12,8 @@
         <Version>2.0.2</Version>
         <PackageId>KikitanTranslator</PackageId>
         <Title>Kikitan Translator</Title>
+        <!-- DirectML's debug layer (DirectML.Debug.dll) is only for diagnosing DirectML itself -->
+        <Microsoft_AI_DirectML_SkipDebugLayerCopy>true</Microsoft_AI_DirectML_SkipDebugLayerCopy>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)' == 'Release' And '$(RuntimeIdentifier)' == ''">
@@ -20,7 +22,9 @@
 
     <ItemGroup>
         <PackageReference Include="Fleck" Version="1.2.0" />
-        <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.24.4" />
+        <!-- DirectML lets RVC voice conversion run on the GPU; it falls back to the CPU when the GPU cannot run a model -->
+        <PackageReference Include="Microsoft.ML.OnnxRuntime.DirectML" Version="1.24.4" Condition="'$(OS)' == 'Windows_NT'" />
+        <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.24.4" Condition="'$(OS)' != 'Windows_NT'" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
         <PackageReference Include="OscCore" Version="1.0.5" />
         <PackageReference Include="Photino.NET" Version="4.0.16"/>

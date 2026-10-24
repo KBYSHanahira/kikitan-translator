@@ -8,7 +8,9 @@
 
     <ItemGroup>
       <PackageReference Include="CurlThin" Version="0.0.7" />
-      <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.24.4" />
+      <!-- DirectML lets RVC voice conversion run on the GPU; it falls back to the CPU when the GPU cannot run a model -->
+      <PackageReference Include="Microsoft.ML.OnnxRuntime.DirectML" Version="1.24.4" Condition="'$(OS)' == 'Windows_NT'" />
+      <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.24.4" Condition="'$(OS)' != 'Windows_NT'" />
       <PackageReference Include="NAudio" Version="2.3.0" />
       <PackageReference Include="NAudio.Wasapi" Version="2.3.0" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
@@ -27,6 +29,11 @@
 
     <ItemGroup>
       <ProjectReference Include="..\KikitanTranslator.Resources\KikitanTranslator.Resources.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <!-- export_rvc.py and RVC's model code, run by RvcPythonExport to convert .pth voice models -->
+      <None Update="Rvc\Python\**\*" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
 </Project>

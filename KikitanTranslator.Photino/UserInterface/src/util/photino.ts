@@ -102,6 +102,14 @@ export function sendAppState() {
     }));
 }
 
+export function pickRvcModel() {
+    // @ts-ignore
+    window.external.sendMessage(JSON.stringify({
+        method: "pick_rvc_model",
+        data: ""
+    }));
+}
+
 export function quit() {
     // @ts-ignore
     window.external.sendMessage(JSON.stringify({
